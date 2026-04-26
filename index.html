@@ -188,14 +188,15 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
+        // CONFIGURACIÓN FIREBASE ACTUALIZADA
         const firebaseConfig = {
           apiKey: "AIzaSyBkP6NALOTSHGd4QVgAxHyeJzCCnOUDY6M",
           authDomain: "fiscalizadores-elite.firebaseapp.com",
           projectId: "fiscalizadores-elite",
-          storageBucket: "fiscalizadores-elite.appspot.com",
-          messagingSenderId: "367204595240",
-          appId: "1:367204595240:web:86566085a210f823293e7d"
+          storageBucket: "fiscalizadores-elite.firebasestorage.app",
+          messagingSenderId: "482161512140",
+          appId: "1:482161512140:web:95dd229a858ab627a03c69",
+          measurementId: "G-63STCB9LHQ"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -206,7 +207,6 @@
         let nivelActual = "ciudades";
         let ciudadSeleccionada = "";
 
-        // LOGIN
         function login() {
             const u = document.getElementById('userInput').value;
             const p = document.getElementById('passInput').value;
@@ -218,9 +218,7 @@
             }
         }
 
-        function logout() {
-            location.reload();
-        }
+        function logout() { location.reload(); }
 
         function irDashboard() {
             document.getElementById('vistaDashboard').style.display = 'block';
@@ -229,8 +227,8 @@
             escucharDatos();
         }
 
-        // ESCUCHAR DATOS EN TIEMPO REAL
         function escucharDatos() {
+            // Se usa la colección "curriculums" como en tu código original
             dbCloud.collection("curriculums").orderBy("fecha", "desc").onSnapshot((querySnapshot) => {
                 dataLocal = [];
                 querySnapshot.forEach((doc) => {
@@ -310,19 +308,16 @@
         function buscador() {
             const q = document.getElementById('inputBusqueda').value.toLowerCase();
             if(!q) { renderCiudades(); return; }
-            
             document.getElementById('txtTitulo').innerText = "Búsqueda:";
             document.getElementById('btnVolver').style.display = 'block';
             const cont = document.getElementById('mainGrid');
             cont.className = "cards-grid";
             cont.innerHTML = "";
-            
             const filtrados = dataLocal.filter(f => 
                 f.nombre.toLowerCase().includes(q) || 
                 f.ciudad.toLowerCase().includes(q) || 
                 f.cong.toLowerCase().includes(q)
             );
-
             filtrados.forEach(f => {
                 cont.innerHTML += `
                     <div class="card">
@@ -338,7 +333,6 @@
         function abrirEditor() {
             document.getElementById('vistaDashboard').style.display = 'none';
             document.getElementById('vistaEditor').style.display = 'block';
-            // Reset
             document.querySelectorAll('#vistaEditor input, #vistaEditor textarea').forEach(i => i.value = "");
             tmpFoto = "";
             document.getElementById('prevImg').src = "https://via.placeholder.com/90";
@@ -356,7 +350,6 @@
             const btn = document.getElementById('btnGuardar');
             btn.innerText = "GUARDANDO...";
             btn.disabled = true;
-
             const registro = {
                 nombre: document.getElementById('inNom').value,
                 ciudad: document.getElementById('inCiu').value,
@@ -373,7 +366,6 @@
                 foto: tmpFoto,
                 fecha: new Date().getTime()
             };
-
             try {
                 await dbCloud.collection("curriculums").add(registro);
                 btn.innerText = "GUARDAR REGISTRO EN LA NUBE";
@@ -403,10 +395,8 @@
                 <div class="cv-main">
                     <h1>${f.nombre}</h1>
                     <p style="color:var(--azul-claro); font-weight:bold; text-transform:uppercase;">${f.fisc}</p>
-                    
                     <h3 style="margin-top:30px;">Historial de Vida</h3>
                     <p style="margin-top:10px; line-height:1.6; color:#555; white-space: pre-line;">${f.hist}</p>
-                    
                     <div style="margin-top:30px;">
                         <div class="cv-bullet"><strong>Ocupación Espiritual:</strong> ${f.esp}</div>
                         <div class="cv-bullet"><strong>Ocupación Material:</strong> ${f.mat}</div>
