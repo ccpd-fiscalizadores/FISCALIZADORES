@@ -3,10 +3,9 @@
   "name": "Fiscalizadores",
   "icons": [
     {
-      "src": "https://cdn-icons-png.freepik.com/512/739/739247.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "paloma.jpg",
+      "sizes": "1024x1024",
+      "type": "image/jpeg"
     }
   ],
   "start_url": "./index.html",
