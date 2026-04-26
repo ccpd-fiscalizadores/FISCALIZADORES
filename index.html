@@ -29,11 +29,25 @@
         .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; margin-bottom: 10px; }
 
         .grid-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
-        .card-folder { background: var(--card); padding: 30px; border-radius: 18px; border: 1px solid var(--borde); text-align: center; cursor: pointer; transition: 0.3s; }
+        
+        /* TARJETA DE CONGREGACIÓN */
+        .card-folder { 
+            background: var(--card); padding: 30px; border-radius: 18px; 
+            border: 1px solid var(--borde); text-align: center; cursor: pointer; 
+            position: relative; transition: 0.3s; 
+        }
         .card-folder:hover { border-color: var(--accent); transform: translateY(-5px); }
         
-        /* Estilo para la foto circular en las carpetas */
         .folder-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); margin-bottom: 15px; }
+        
+        /* EL LÁPIZ DE EDICIÓN */
+        .btn-edit-photo {
+            position: absolute; top: 15px; right: 15px;
+            background: var(--accent); color: white; width: 32px; height: 32px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; border: 2px solid var(--card); cursor: pointer; z-index: 10;
+        }
+
         .card-img-circle { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); margin-bottom: 15px; cursor: zoom-in; }
 
         .img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; cursor: zoom-out; }
@@ -61,6 +75,8 @@
 <body>
 
     <div id="imgOverlay" class="img-overlay" onclick="cerrarFoto()"><img id="imgFull" src=""></div>
+    
+    <input type="file" id="fileCong" style="display:none" onchange="procesarFotoCong(this)">
 
     <header>
         <h2 style="font-weight: 800; cursor: pointer;" onclick="location.reload()">FISCALIZADORES<span style="color:var(--accent)">.</span></h2>
@@ -90,8 +106,7 @@
             <div style="text-align: center; margin-bottom: 30px;">
                 <img id="prevFoto" src="https://via.placeholder.com/120" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border: 3px solid var(--accent);">
                 <input type="file" id="fileIn" onchange="subirFoto(this)" style="display:none">
-                <button class="btn-outline" style="display:block; margin: 15px auto;" onclick="document.getElementById('fileIn').click()">Cambiar Foto</button>
-                <p style="font-size: 0.8rem; color: var(--texto-sec);">Esta foto se usará como perfil del fiscalizador y de su congregación.</p>
+                <button class="btn-outline" style="display:block; margin: 15px auto;" onclick="document.getElementById('fileIn').click()">Cambiar Foto de Perfil</button>
             </div>
             <div class="form-grid">
                 <div><label class="data-label">Nombre Completo</label><input type="text" id="inNom"></div>
@@ -149,6 +164,7 @@
         let idEdit = null;
         let nivel = "ciudades";
         let ciuSel = "";
+        let congParaEditar = ""; // Para saber qué cong estamos editando la foto
 
         function ampliarFoto(src) { if(src && !src.includes('placeholder')) { document.getElementById('imgFull').src = src; document.getElementById('imgOverlay').style.display = 'flex'; } }
         function cerrarFoto() { document.getElementById('imgOverlay').style.display = 'none'; }
@@ -171,71 +187,75 @@
                 snap.forEach(doc => miembros.push({ id: doc.id, ...doc.data() }));
                 if(nivel === "ciudades") renderCiudades();
                 else if(nivel === "congs") verCongs(ciuSel);
+                else if(nivel === "miembros") verMiembros(ciuSel, congSelGlobal);
             });
-        }
-
-        function buscador() {
-            const txt = document.getElementById('busqueda').value.toLowerCase();
-            const grid = document.getElementById('gridMain');
-            if (txt.length > 0) {
-                nivel = "busqueda"; document.getElementById('btnBack').style.display = 'inline-block';
-                document.getElementById('tituloTxt').innerText = "Resultados";
-                grid.innerHTML = "";
-                miembros.filter(m => (m.nombre && m.nombre.toLowerCase().includes(txt)) || (m.ciudad && m.ciudad.toLowerCase().includes(txt)) || (m.cong && m.cong.toLowerCase().includes(txt))).forEach(m => {
-                    grid.innerHTML += `<div class="card-folder">
-                        <img src="${m.foto || 'https://via.placeholder.com/80'}" class="card-img-circle" onclick="ampliarFoto(this.src)">
-                        <div onclick="verCV('${m.id}')"><h3>${m.nombre} ${m.nacionalidad && m.nacionalidad !== "undefined" ? m.nacionalidad : ''}</h3></div>
-                    </div>`;
-                });
-            } else { renderCiudades(); }
         }
 
         function renderCiudades() {
-            nivel = "ciudades"; 
-            document.getElementById('btnBack').style.display = 'none';
+            nivel = "ciudades"; document.getElementById('btnBack').style.display = 'none';
             document.getElementById('tituloTxt').innerText = "Listado de Ciudades";
-            const grid = document.getElementById('gridMain'); 
-            grid.innerHTML = "";
-            
+            const grid = document.getElementById('gridMain'); grid.innerHTML = "";
             const ciudadesUnicas = [...new Set(miembros.map(m => m.ciudad))];
-            
             ciudadesUnicas.forEach(c => {
                 const primerMiembro = miembros.find(m => m.ciudad === c);
-                let iconoAMostrar = "📍";
-                if (primerMiembro && primerMiembro.nacionalidad && primerMiembro.nacionalidad !== "undefined") {
-                    iconoAMostrar = primerMiembro.nacionalidad;
-                }
-                
-                grid.innerHTML += `
-                <div class="card-folder" onclick="verCongs('${c}')">
-                    <span style="font-size:3rem;">${iconoAMostrar}</span>
-                    <h3 style="margin-top:10px;">${c}</h3>
-                </div>`;
+                let icono = (primerMiembro && primerMiembro.nacionalidad && primerMiembro.nacionalidad !== "undefined") ? primerMiembro.nacionalidad : "📍";
+                grid.innerHTML += `<div class="card-folder" onclick="verCongs('${c}')"><span style="font-size:3rem;">${icono}</span><h3 style="margin-top:10px;">${c}</h3></div>`;
             });
         }
 
+        let congSelGlobal = "";
         function verCongs(c) {
             nivel = "congs"; ciuSel = c; document.getElementById('btnBack').style.display = 'inline-block';
             document.getElementById('tituloTxt').innerText = "Congregaciones en " + c;
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
-            
             const congsUnicas = [...new Set(miembros.filter(m => m.ciudad === c).map(m => m.cong))];
             
             congsUnicas.forEach(co => {
-                // Buscamos la foto de cualquier miembro de esta congregación para usarla de perfil
-                const miembroConFoto = miembros.find(m => m.ciudad === c && m.cong === co && m.foto);
-                const fotoCong = miembroConFoto ? miembroConFoto.foto : "https://via.placeholder.com/100?text=⛪";
+                // Buscamos si algún miembro tiene guardada la foto de esta congregación
+                const mConFotoCong = miembros.find(m => m.ciudad === c && m.cong === co && m.fotoCong);
+                const fotoParaMostrar = mConFotoCong ? mConFotoCong.fotoCong : "https://via.placeholder.com/100?text=⛪";
 
                 grid.innerHTML += `
-                <div class="card-folder" onclick="verMiembros('${c}','${co}')">
-                    <img src="${fotoCong}" class="folder-img">
-                    <h3>${co}</h3>
+                <div class="card-folder">
+                    <div class="btn-edit-photo" onclick="event.stopPropagation(); prepararFotoCong('${co}')">✏️</div>
+                    <div onclick="verMiembros('${c}','${co}')">
+                        <img src="${fotoParaMostrar}" class="folder-img">
+                        <h3>${co}</h3>
+                    </div>
                 </div>`;
             });
         }
 
+        // LÓGICA PARA CARGAR FOTO DE CONGREGACIÓN INDEPENDIENTE
+        function prepararFotoCong(cong) {
+            congParaEditar = cong;
+            document.getElementById('fileCong').click();
+        }
+
+        function procesarFotoCong(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const nuevaFotoCong = e.target.result;
+                    // Actualizamos la foto de congregación en TODOS los miembros que pertenezcan a ella
+                    const batch = db.batch();
+                    const miembrosDeLaCong = miembros.filter(m => m.cong === congParaEditar && m.ciudad === ciuSel);
+                    
+                    miembrosDeLaCong.forEach(m => {
+                        const ref = db.collection("curriculums").doc(m.id);
+                        batch.update(ref, { fotoCong: nuevaFotoCong });
+                    });
+
+                    await batch.commit();
+                    alert("Foto de la congregación actualizada");
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
         function verMiembros(c, co) {
-            nivel = "miembros"; document.getElementById('tituloTxt').innerText = "Fiscalizadores de " + co;
+            nivel = "miembros"; congSelGlobal = co;
+            document.getElementById('tituloTxt').innerText = "Fiscalizadores de " + co;
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
             miembros.filter(m => m.ciudad === c && m.cong === co).forEach(m => {
                 grid.innerHTML += `<div class="card-folder">
