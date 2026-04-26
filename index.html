@@ -31,6 +31,9 @@
         .grid-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
         .card-folder { background: var(--card); padding: 30px; border-radius: 18px; border: 1px solid var(--borde); text-align: center; cursor: pointer; transition: 0.3s; }
         .card-folder:hover { border-color: var(--accent); transform: translateY(-5px); }
+        
+        /* Estilo para la foto circular en las carpetas */
+        .folder-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); margin-bottom: 15px; }
         .card-img-circle { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); margin-bottom: 15px; cursor: zoom-in; }
 
         .img-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; cursor: zoom-out; }
@@ -88,6 +91,7 @@
                 <img id="prevFoto" src="https://via.placeholder.com/120" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border: 3px solid var(--accent);">
                 <input type="file" id="fileIn" onchange="subirFoto(this)" style="display:none">
                 <button class="btn-outline" style="display:block; margin: 15px auto;" onclick="document.getElementById('fileIn').click()">Cambiar Foto</button>
+                <p style="font-size: 0.8rem; color: var(--texto-sec);">Esta foto se usará como perfil del fiscalizador y de su congregación.</p>
             </div>
             <div class="form-grid">
                 <div><label class="data-label">Nombre Completo</label><input type="text" id="inNom"></div>
@@ -166,6 +170,7 @@
                 miembros = [];
                 snap.forEach(doc => miembros.push({ id: doc.id, ...doc.data() }));
                 if(nivel === "ciudades") renderCiudades();
+                else if(nivel === "congs") verCongs(ciuSel);
             });
         }
 
@@ -213,8 +218,19 @@
             nivel = "congs"; ciuSel = c; document.getElementById('btnBack').style.display = 'inline-block';
             document.getElementById('tituloTxt').innerText = "Congregaciones en " + c;
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
-            [...new Set(miembros.filter(m => m.ciudad === c).map(m => m.cong))].forEach(co => {
-                grid.innerHTML += `<div class="card-folder" onclick="verMiembros('${c}','${co}')"><span style="font-size:3rem;">⛪</span><h3>${co}</h3></div>`;
+            
+            const congsUnicas = [...new Set(miembros.filter(m => m.ciudad === c).map(m => m.cong))];
+            
+            congsUnicas.forEach(co => {
+                // Buscamos la foto de cualquier miembro de esta congregación para usarla de perfil
+                const miembroConFoto = miembros.find(m => m.ciudad === c && m.cong === co && m.foto);
+                const fotoCong = miembroConFoto ? miembroConFoto.foto : "https://via.placeholder.com/100?text=⛪";
+
+                grid.innerHTML += `
+                <div class="card-folder" onclick="verMiembros('${c}','${co}')">
+                    <img src="${fotoCong}" class="folder-img">
+                    <h3>${co}</h3>
+                </div>`;
             });
         }
 
@@ -306,7 +322,7 @@
                 fisc: document.getElementById('inFisc').value, hist: document.getElementById('inHist').value,
                 foto: fotoURL, modificado: new Date().getTime()
             };
-            if(!d.nombre || !d.ciudad) return alert("Nombre y Ciudad son obligatorios");
+            if(!d.nombre || !d.ciudad || !d.cong) return alert("Nombre, Ciudad y Congregación son obligatorios");
             if(idEdit) await db.collection("curriculums").doc(idEdit).update(d);
             else await db.collection("curriculums").add(d);
             irDashboard();
