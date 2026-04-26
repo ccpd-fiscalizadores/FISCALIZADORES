@@ -3,8 +3,14 @@
 <head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA FISCALIZADORES</title>
+    <title>FISCALIZADORES</title>
     
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="FISCALIZADORES">
+    <link rel="apple-touch-icon" href="logo.png">
+
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -22,7 +28,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; }
         body { background-color: var(--bg); color: var(--texto); line-height: 1.6; }
 
-        /* Estilo del Header con el nuevo Logo */
         header { 
             background: var(--card); 
             padding: 0.8rem 2rem; 
@@ -41,7 +46,7 @@
             cursor: pointer;
         }
         .app-logo {
-            height: 45px; /* Tamaño del logo en la barra superior */
+            height: 45px;
             width: auto;
             border-radius: 8px;
         }
@@ -98,7 +103,7 @@
 
     <header>
         <div class="logo-container" onclick="location.reload()">
-            <img src="logo.png?v=2" alt="Logo" class="app-logo">
+            <img src="logo.png" alt="Logo" class="app-logo">
             <span class="logo-text">FISCALIZADORES<span style="color:var(--accent)">.</span></span>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Modo Oscuro</button>
@@ -327,6 +332,7 @@
                 document.getElementById('prevFoto').src = m.foto || "https://via.placeholder.com/120";
             } else {
                 document.querySelectorAll('input, textarea').forEach(i => i.value = "");
+                document.getElementById('prevFoto').src = "https://via.placeholder.com/120";
             }
         }
 
