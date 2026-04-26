@@ -22,7 +22,35 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: 0.3s; }
         body { background-color: var(--bg); color: var(--texto); line-height: 1.6; }
 
-        header { background: var(--card); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--borde); position: sticky; top: 0; z-index: 1000; }
+        /* Estilo del Header con el nuevo Logo */
+        header { 
+            background: var(--card); 
+            padding: 0.8rem 2rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border-bottom: 1px solid var(--borde); 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000; 
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .app-logo {
+            height: 45px; /* Tamaño del logo en la barra superior */
+            width: auto;
+            border-radius: 8px;
+        }
+        .logo-text {
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: -0.5px;
+        }
+
         .theme-toggle { background: var(--bg); border: 1px solid var(--borde); color: var(--texto); padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: 600; }
 
         .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; }
@@ -69,7 +97,10 @@
     <input type="file" id="fileCong" style="display:none" onchange="procesarFotoCong(this)">
 
     <header>
-        <h2 style="font-weight: 800; cursor: pointer;" onclick="location.reload()">FISCALIZADORES<span style="color:var(--accent)">.</span></h2>
+        <div class="logo-container" onclick="location.reload()">
+            <img src="logo.png?v=2" alt="Logo" class="app-logo">
+            <span class="logo-text">FISCALIZADORES<span style="color:var(--accent)">.</span></span>
+        </div>
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Modo Oscuro</button>
     </header>
 
