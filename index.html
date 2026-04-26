@@ -15,6 +15,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SISTEMA FISCALIZADORES - ELITE</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --azul-header: #0a1f33;
@@ -26,6 +30,13 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-gris); color: var(--texto); }
+
+        /* Estilos del Login */
+        #vistaLogin { 
+            height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--azul-header); 
+        }
+        .login-box { background: white; padding: 40px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
 
         header { 
             background: var(--azul-header); 
@@ -92,16 +103,18 @@
         .card-img { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--azul-claro); }
         .btn-view { width: 100%; padding: 10px; background: #f0f9ff; border: none; border-radius: 8px; color: var(--azul-claro); font-weight: 700; cursor: pointer; }
 
-        #vistaCV { display: none; padding: 20px; }
+        #vistaDashboard, #vistaCV, #vistaEditor { display: none; }
+
+        #vistaCV { padding: 20px; }
         .cv-sheet { max-width: 900px; margin: 0 auto; background: white; display: flex; flex-wrap: wrap; border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
         .cv-aside { width: 35%; background: var(--azul-header); color: white; padding: 40px 30px; min-width: 280px; }
         .cv-main { width: 65%; padding: 50px; min-width: 320px; }
-        .cv-photo { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--azul-claro); object-fit: cover; margin-bottom: 25px; }
+        .cv-photo { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--azul-claro); object-fit: cover; margin-bottom: 25px; }
         .cv-title { color: var(--azul-claro); text-transform: uppercase; font-size: 0.8rem; margin: 25px 0 10px; border-bottom: 1px solid #334155; padding-bottom: 5px; }
         .cv-bullet { position: relative; padding-left: 30px; margin-bottom: 15px; }
         .cv-bullet::before { content: ''; position: absolute; left: 0; top: 4px; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 12px solid var(--flecha); }
 
-        #vistaEditor { display: none; padding: 40px; }
+        #vistaEditor { padding: 40px; }
         .editor-box { max-width: 850px; margin: 0 auto; background: white; padding: 40px; border-radius: 15px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .preview-area { grid-column: span 2; display: flex; align-items: center; gap: 20px; background: #f8fafc; padding: 15px; border-radius: 10px; }
@@ -110,10 +123,23 @@
 </head>
 <body>
 
+    <div id="vistaLogin">
+        <div class="login-box">
+            <h2 style="margin-bottom: 20px; color: var(--azul-header);">FISCALIZADORES 🕊️</h2>
+            <input type="text" id="userInput" placeholder="Usuario">
+            <input type="password" id="passInput" placeholder="Contraseña">
+            <button class="btn-new" style="width:100%" onclick="login()">ENTRAR AL SISTEMA</button>
+            <p id="errorLogin" style="color:red; font-size:0.8rem; margin-top:10px; display:none;">Datos incorrectos</p>
+        </div>
+    </div>
+
     <div id="vistaDashboard">
         <header>
             <h1>FISCALIZADORES</h1>
-            <div class="header-subtext">CONGREGACIÓN CRISTIANA PUEBLO DE DIOS 🕊️</div>
+            <div style="text-align: right;">
+                <div class="header-subtext">CONGREGACIÓN CRISTIANA PUEBLO DE DIOS 🕊️</div>
+                <button onclick="logout()" style="background:none; border:1px solid white; color:white; padding:2px 8px; border-radius:5px; font-size:0.7rem; cursor:pointer; margin-top:5px;">Cerrar Sesión</button>
+            </div>
         </header>
 
         <div class="search-section">
@@ -137,6 +163,7 @@
 
     <div id="vistaEditor">
         <div class="editor-box">
+            <button onclick="irDashboard()" style="margin-bottom:20px; cursor:pointer; background:none; border:none; color:var(--azul-claro);">← Cancelar</button>
             <h2>Nuevo Registro</h2>
             <div class="form-grid" style="margin-top:20px;">
                 <div class="preview-area">
@@ -155,22 +182,62 @@
                 <div><label>Ocupación Espiritual</label><input type="text" id="inEsp"></div>
                 <div><label>Ocupación Material</label><input type="text" id="inMat"></div>
                 <div style="grid-column: span 2;"><label>Estado Actual</label><input type="text" id="inEst"></div>
-                <button class="btn-new" style="grid-column: span 2;" onclick="guardar()">GUARDAR REGISTRO</button>
+                <button id="btnGuardar" class="btn-new" style="grid-column: span 2;" onclick="guardar()">GUARDAR REGISTRO EN LA NUBE</button>
             </div>
         </div>
     </div>
 
     <script>
-        let db = JSON.parse(localStorage.getItem('fisc_vFinal')) || [];
+        // CONFIGURACIÓN FIREBASE
+        const firebaseConfig = {
+          apiKey: "AIzaSyBkP6NALOTSHGd4QVgAxHyeJzCCnOUDY6M",
+          authDomain: "fiscalizadores-elite.firebaseapp.com",
+          projectId: "fiscalizadores-elite",
+          storageBucket: "fiscalizadores-elite.appspot.com",
+          messagingSenderId: "367204595240",
+          appId: "1:367204595240:web:86566085a210f823293e7d"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const dbCloud = firebase.firestore();
+
+        let dataLocal = [];
         let tmpFoto = "";
         let nivelActual = "ciudades";
         let ciudadSeleccionada = "";
+
+        // LOGIN
+        function login() {
+            const u = document.getElementById('userInput').value;
+            const p = document.getElementById('passInput').value;
+            if(u === "admin" && p === "elite2026") {
+                document.getElementById('vistaLogin').style.display = 'none';
+                irDashboard();
+            } else {
+                document.getElementById('errorLogin').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
 
         function irDashboard() {
             document.getElementById('vistaDashboard').style.display = 'block';
             document.getElementById('vistaCV').style.display = 'none';
             document.getElementById('vistaEditor').style.display = 'none';
-            renderCiudades();
+            escucharDatos();
+        }
+
+        // ESCUCHAR DATOS EN TIEMPO REAL
+        function escucharDatos() {
+            dbCloud.collection("curriculums").orderBy("fecha", "desc").onSnapshot((querySnapshot) => {
+                dataLocal = [];
+                querySnapshot.forEach((doc) => {
+                    dataLocal.push({ id_cloud: doc.id, ...doc.data() });
+                });
+                renderCiudades();
+            });
         }
 
         function renderCiudades() {
@@ -181,9 +248,10 @@
             cont.className = "grid-folder";
             cont.innerHTML = "";
 
-            const ciudades = [...new Set(db.map(f => f.ciudad))];
+            const ciudades = [...new Set(dataLocal.map(f => f.ciudad))];
             ciudades.forEach(ciu => {
-                const cant = db.filter(f => f.ciudad === ciu).length;
+                if(!ciu) return;
+                const cant = dataLocal.filter(f => f.ciudad === ciu).length;
                 cont.innerHTML += `
                     <div class="folder-card" onclick="verCongregaciones('${ciu}')">
                         <span class="folder-icon">📍</span>
@@ -202,9 +270,9 @@
             cont.className = "grid-folder";
             cont.innerHTML = "";
 
-            const congs = [...new Set(db.filter(f => f.ciudad === ciu).map(f => f.cong))];
+            const congs = [...new Set(dataLocal.filter(f => f.ciudad === ciu).map(f => f.cong))];
             congs.forEach(con => {
-                const cant = db.filter(f => f.ciudad === ciu && f.cong === con).length;
+                const cant = dataLocal.filter(f => f.ciudad === ciu && f.cong === con).length;
                 cont.innerHTML += `
                     <div class="folder-card" onclick="verFiscalizadores('${ciu}', '${con}')">
                         <span class="folder-icon">⛪</span>
@@ -221,15 +289,15 @@
             cont.className = "cards-grid";
             cont.innerHTML = "";
 
-            const filtrados = db.filter(f => f.ciudad === ciu && f.cong === con);
+            const filtrados = dataLocal.filter(f => f.ciudad === ciu && f.cong === con);
             filtrados.forEach(f => {
                 cont.innerHTML += `
                     <div class="card">
                         <div class="card-header">
                             <img src="${f.foto || 'https://via.placeholder.com/60'}" class="card-img">
-                            <div><h3>${f.nombre}</h3><p style="font-size:0.8rem; color:var(--azul-claro);">${f.ciudad}</p></div>
+                            <div><h3>${f.nombre}</h3><p style="font-size:0.8rem; color:var(--azul-claro);">${f.fisc}</p></div>
                         </div>
-                        <button class="btn-view" onclick="verCV(${f.id})">VER PERFIL</button>
+                        <button class="btn-view" onclick="verCV('${f.id_cloud}')">VER PERFIL</button>
                     </div>`;
             });
         }
@@ -243,34 +311,26 @@
             const q = document.getElementById('inputBusqueda').value.toLowerCase();
             if(!q) { renderCiudades(); return; }
             
-            document.getElementById('txtTitulo').innerText = "Resultados de búsqueda:";
+            document.getElementById('txtTitulo').innerText = "Búsqueda:";
             document.getElementById('btnVolver').style.display = 'block';
             const cont = document.getElementById('mainGrid');
             cont.className = "cards-grid";
             cont.innerHTML = "";
             
-            const filtrados = db.filter(f => 
+            const filtrados = dataLocal.filter(f => 
                 f.nombre.toLowerCase().includes(q) || 
                 f.ciudad.toLowerCase().includes(q) || 
                 f.cong.toLowerCase().includes(q)
             );
-
-            if(filtrados.length === 0) {
-                cont.innerHTML = "<p style='grid-column: 1/-1; text-align: center; padding: 40px; color: #94a3b8;'>No se encontraron resultados.</p>";
-                return;
-            }
 
             filtrados.forEach(f => {
                 cont.innerHTML += `
                     <div class="card">
                         <div class="card-header">
                             <img src="${f.foto || 'https://via.placeholder.com/60'}" class="card-img">
-                            <div>
-                                <h3>${f.nombre}</h3>
-                                <p style="font-size:0.8rem; color:var(--azul-claro);">${f.ciudad} | ${f.cong}</p>
-                            </div>
+                            <div><h3>${f.nombre}</h3><p style="font-size:0.8rem; color:var(--azul-claro);">${f.ciudad} | ${f.cong}</p></div>
                         </div>
-                        <button class="btn-view" onclick="verCV(${f.id})">VER PERFIL</button>
+                        <button class="btn-view" onclick="verCV('${f.id_cloud}')">VER PERFIL</button>
                     </div>`;
             });
         }
@@ -278,19 +338,8 @@
         function abrirEditor() {
             document.getElementById('vistaDashboard').style.display = 'none';
             document.getElementById('vistaEditor').style.display = 'block';
-            // Reset fields
-            document.getElementById('inNom').value = "";
-            document.getElementById('inCiu').value = "";
-            document.getElementById('inCong').value = "";
-            document.getElementById('inFisc').value = "";
-            document.getElementById('inTel').value = "";
-            document.getElementById('inEdad').value = "";
-            document.getElementById('inCiv').value = "";
-            document.getElementById('inAnos').value = "";
-            document.getElementById('inHist').value = "";
-            document.getElementById('inEsp').value = "";
-            document.getElementById('inMat').value = "";
-            document.getElementById('inEst').value = "";
+            // Reset
+            document.querySelectorAll('#vistaEditor input, #vistaEditor textarea').forEach(i => i.value = "");
             tmpFoto = "";
             document.getElementById('prevImg').src = "https://via.placeholder.com/90";
         }
@@ -303,9 +352,12 @@
             }
         }
 
-        function guardar() {
+        async function guardar() {
+            const btn = document.getElementById('btnGuardar');
+            btn.innerText = "GUARDANDO...";
+            btn.disabled = true;
+
             const registro = {
-                id: Date.now(),
                 nombre: document.getElementById('inNom').value,
                 ciudad: document.getElementById('inCiu').value,
                 cong: document.getElementById('inCong').value,
@@ -318,20 +370,28 @@
                 esp: document.getElementById('inEsp').value,
                 mat: document.getElementById('inMat').value,
                 est: document.getElementById('inEst').value,
-                foto: tmpFoto
+                foto: tmpFoto,
+                fecha: new Date().getTime()
             };
-            db.push(registro);
-            localStorage.setItem('fisc_vFinal', JSON.stringify(db));
-            irDashboard();
+
+            try {
+                await dbCloud.collection("curriculums").add(registro);
+                btn.innerText = "GUARDAR REGISTRO EN LA NUBE";
+                btn.disabled = false;
+                irDashboard();
+            } catch (e) {
+                alert("Error al guardar: " + e);
+                btn.disabled = false;
+            }
         }
 
-        function verCV(id) {
-            const f = db.find(x => x.id === id);
+        function verCV(idCloud) {
+            const f = dataLocal.find(x => x.id_cloud === idCloud);
             document.getElementById('vistaDashboard').style.display = 'none';
             document.getElementById('vistaCV').style.display = 'block';
             document.getElementById('cvDetalle').innerHTML = `
                 <div class="cv-aside">
-                    <img src="${f.foto || ''}" class="cv-photo">
+                    <img src="${f.foto || 'https://via.placeholder.com/150'}" class="cv-photo">
                     <h3 class="cv-title">CONTACTO</h3>
                     <p>📱 ${f.tel}</p>
                     <p>📍 ${f.ciudad}</p>
@@ -339,27 +399,22 @@
                     <h3 class="cv-title">DATOS</h3>
                     <p>🎂 Edad: ${f.edad} años</p>
                     <p>💍 Estado: ${f.civ}</p>
-                    <p>📋 Fiscalizador: ${f.fisc}</p>
                 </div>
                 <div class="cv-main">
                     <h1>${f.nombre}</h1>
-                    <p style="color:var(--azul-claro); font-weight:bold; text-transform:uppercase; margin-bottom:5px;">Ciudad - ${f.ciudad}</p>
-                    <p style="color:var(--azul-claro); font-weight:bold; text-transform:uppercase;">Congregación - ${f.cong}</p>
+                    <p style="color:var(--azul-claro); font-weight:bold; text-transform:uppercase;">${f.fisc}</p>
                     
-                    <h3 style="margin-top:40px;">Historial de Vida</h3>
+                    <h3 style="margin-top:30px;">Historial de Vida</h3>
                     <p style="margin-top:10px; line-height:1.6; color:#555; white-space: pre-line;">${f.hist}</p>
                     
-                    <div style="margin-top:40px;">
+                    <div style="margin-top:30px;">
                         <div class="cv-bullet"><strong>Ocupación Espiritual:</strong> ${f.esp}</div>
                         <div class="cv-bullet"><strong>Ocupación Material:</strong> ${f.mat}</div>
                         <div class="cv-bullet"><strong>Años Perseverancia:</strong> ${f.anos}</div>
                         <div class="cv-bullet"><strong>Estado Actual:</strong> ${f.est}</div>
-                        <div class="cv-bullet"><strong>Fiscalizador:</strong> ${f.fisc}</div>
                     </div>
                 </div>`;
         }
-
-        irDashboard();
     </script>
 </body>
 </html>
