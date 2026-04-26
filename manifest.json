@@ -3,13 +3,13 @@
   "name": "Fiscalizadores",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/739/739247.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
   ],
-  "start_url": "index.html",
+  "start_url": "index.html?update=true",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0a1f33"
