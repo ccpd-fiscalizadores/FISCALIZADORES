@@ -64,7 +64,7 @@
 
     <div id="vistaDashboard">
         <div style="padding: 20px 40px; display: flex; gap: 15px; align-items: center;">
-            <input type="text" id="busqueda" placeholder="Buscar por nombre..." style="flex:1; padding: 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--card); color: var(--texto);" onkeyup="buscador()">
+            <input type="text" id="busqueda" placeholder="Buscar por nombre, ciudad o congregación..." style="flex:1; padding: 12px; border-radius: 10px; border: 1px solid var(--borde); background: var(--card); color: var(--texto);" onkeyup="buscador()">
             <button class="btn-primary" onclick="abrirEditor()">+ NUEVO REGISTRO</button>
         </div>
         <div style="padding: 0 40px 40px;">
@@ -156,6 +156,39 @@
             });
         }
 
+        // BUSCADOR MEJORADO: Filtra por Nombre, Ciudad o Congregación
+        function buscador() {
+            const txt = document.getElementById('busqueda').value.toLowerCase();
+            const grid = document.getElementById('gridMain');
+            
+            if (txt.length > 0) {
+                nivel = "busqueda";
+                document.getElementById('btnBack').style.display = 'inline-block';
+                document.getElementById('tituloTxt').innerText = "Resultados de búsqueda";
+                grid.innerHTML = "";
+                
+                const filtrados = miembros.filter(m => 
+                    (m.nombre && m.nombre.toLowerCase().includes(txt)) || 
+                    (m.ciudad && m.ciudad.toLowerCase().includes(txt)) || 
+                    (m.cong && m.cong.toLowerCase().includes(txt))
+                );
+
+                if (filtrados.length === 0) {
+                    grid.innerHTML = `<p style="grid-column: span 3; text-align: center; padding: 40px; color: var(--texto-sec);">No se encontraron resultados para "${txt}"</p>`;
+                }
+
+                filtrados.forEach(m => {
+                    grid.innerHTML += `<div class="card-folder" onclick="verCV('${m.id}')">
+                        <img src="${m.foto || 'https://via.placeholder.com/80'}" class="card-img-circle">
+                        <h3>${m.nombre}</h3>
+                        <small style="color: var(--accent); font-weight: 600;">${m.ciudad} | ${m.cong}</small>
+                    </div>`;
+                });
+            } else {
+                renderCiudades();
+            }
+        }
+
         function renderCiudades() {
             nivel = "ciudades";
             document.getElementById('btnBack').style.display = 'none';
@@ -189,9 +222,7 @@
         function verMiembros(c, co) {
             nivel = "miembros";
             document.getElementById('btnBack').style.display = 'inline-block';
-            // CAMBIO SOLICITADO: Título dinámico para el listado de personas
             document.getElementById('tituloTxt').innerText = "Fiscalizadores de " + co;
-            
             const grid = document.getElementById('gridMain');
             grid.innerHTML = "";
             miembros.filter(m => m.ciudad === c && m.cong === co).forEach(m => {
@@ -203,6 +234,7 @@
         }
 
         function volverAtras() {
+            document.getElementById('busqueda').value = ""; // Limpia el buscador al volver
             if(nivel === "miembros") verCongs(ciuSel);
             else renderCiudades();
         }
