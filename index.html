@@ -16,19 +16,16 @@
 
     <style>
         :root {
-            --azul-header: #050a14;
             --azul-claro: #4dc3e6;
             --bg-gris: #0d1117;
             --card-bg: #161b22;
             --texto: #c9d1d9;
-            --texto-brillante: #ffffff;
-            --flecha: #58a6ff;
             --borde: #30363d;
             --transition: all 0.3s ease;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: var(--bg-gris); color: var(--texto); line-height: 1.6; }
+        body { background-color: var(--bg-gris); color: var(--texto); line-height: 1.6; overflow-x: hidden; }
 
         .btn-new { 
             background: var(--azul-claro); color: #000; border: none; padding: 12px 25px; 
@@ -51,96 +48,89 @@
         
         .card-img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--azul-claro); margin-bottom: 10px; }
 
-        .cv-sheet { max-width: 900px; margin: 0 auto 40px; background: var(--card-bg); box-shadow: 0 0 50px rgba(0,0,0,0.5); border-radius: 12px; overflow: hidden; display: flex; flex-wrap: wrap; }
+        .cv-sheet { max-width: 900px; margin: 0 auto 40px; background: var(--card-bg); border-radius: 12px; overflow: hidden; display: flex; flex-wrap: wrap; border: 1px solid var(--borde); }
         .cv-header-block { width: 100%; padding: 50px 20px; background: #000; text-align: center; border-bottom: 1px solid var(--borde); }
-        .cv-photo { width: 200px; height: 200px; border-radius: 50%; border: 4px solid var(--azul-claro); object-fit: cover; cursor: zoom-in; margin-bottom: 25px; transition: 0.3s; }
-        .cv-name { font-size: 2.8rem; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 15px; text-transform: uppercase; letter-spacing: -1px; }
-        .cv-sub { color: var(--azul-claro); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
+        .cv-photo { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--azul-claro); object-fit: cover; cursor: zoom-in; }
+        .cv-name { font-size: 2.5rem; font-weight: 800; color: #fff; margin: 15px 0; text-transform: uppercase; }
+        .cv-sub { color: var(--azul-claro); font-weight: 800; font-size: 0.9rem; letter-spacing: 2px; }
 
         .cv-body-content { width: 100%; display: flex; flex-wrap: wrap; }
         .cv-aside { width: 35%; background: #050a14; padding: 40px 30px; border-right: 1px solid var(--borde); min-width: 280px; }
-        .cv-section-title { color: var(--azul-claro); font-size: 0.85rem; font-weight: 800; border-bottom: 1px solid #1e293b; padding-bottom: 8px; margin-bottom: 20px; letter-spacing: 1.5px; }
-        .cv-aside p { font-size: 0.95rem; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; color: #cbd5e1; }
+        .cv-section-title { color: var(--azul-claro); font-size: 0.8rem; font-weight: 800; border-bottom: 1px solid #1e293b; padding-bottom: 8px; margin-bottom: 20px; }
+        .cv-aside p { font-size: 0.9rem; margin-bottom: 12px; color: #cbd5e1; }
 
         .cv-main { width: 65%; padding: 40px 40px; background: var(--card-bg); min-width: 320px; }
-        .cv-hist-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; color: #fff; position: relative; }
+        .cv-hist-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; color: #fff; }
 
-        .cv-bullet { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 22px; }
-        .cv-bullet-icon { color: var(--flecha); font-size: 1.1rem; }
-        .cv-bullet-text b { display: block; color: #fff; font-size: 1.05rem; }
-        .cv-bullet-text span { color: #8b949e; font-size: 0.95rem; }
-
-        .editor-box { max-width: 700px; margin: 40px auto; background: var(--card-bg); padding: 40px; border-radius: 15px; border: 1px solid var(--borde); }
+        .editor-box { max-width: 750px; margin: 40px auto; background: var(--card-bg); padding: 40px; border-radius: 15px; border: 1px solid var(--borde); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        label { font-size: 0.8rem; color: var(--azul-claro); font-weight: bold; }
-        input, textarea, select { background: #0d1117; border: 1px solid var(--borde); color: white; padding: 12px; border-radius: 8px; width: 100%; outline: none; margin-top: 5px; }
+        label { font-size: 0.75rem; color: var(--azul-claro); font-weight: bold; text-transform: uppercase; }
+        input, textarea { background: #0d1117; border: 1px solid var(--borde); color: white; padding: 12px; border-radius: 8px; width: 100%; outline: none; margin-top: 5px; }
 
-        #modalFoto { display: none; position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        #modalFoto { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         
         #vistaDashboard, #vistaCV, #vistaEditor { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="modalFoto" onclick="this.style.display='none'"><img id="fotoAgrandada" style="max-width:90%; max-height: 90%; border:3px solid white; border-radius: 10px;"></div>
+    <div id="modalFoto" onclick="this.style.display='none'"><img id="fotoAgrandada" style="max-width:90%; max-height: 90%; border:2px solid white;"></div>
 
     <div id="vistaLogin">
         <div class="login-box">
-            <h1 style="margin-bottom: 30px; color: var(--azul-claro); font-size: 1.5rem;">SISTEMA DE GESTIÓN 🕊️</h1>
+            <h1 style="margin-bottom: 30px; color: var(--azul-claro);">ACCESO SISTEMA</h1>
             <input type="text" id="userInput" placeholder="Usuario">
             <input type="password" id="passInput" placeholder="Contraseña">
-            <button class="btn-new" style="width:100%" onclick="login()">ACCEDER</button>
+            <button class="btn-new" style="width:100%" onclick="login()">INGRESAR</button>
         </div>
     </div>
 
     <div id="vistaDashboard">
         <header>
-            <h1 style="letter-spacing: 2px;">FISCALIZADORES</h1>
-            <button onclick="logout()" style="background:transparent; border:1px solid #444; color:gray; padding:5px 15px; border-radius:5px; cursor:pointer;">Cerrar Sesión</button>
+            <h1>FISCALIZADORES</h1>
+            <button onclick="logout()" style="background:none; border:none; color:gray; cursor:pointer;">Salir</button>
         </header>
         <div class="search-section">
-            <input type="text" id="inputBusqueda" class="search-input" placeholder="🔍 Buscar por nombre, ciudad o congregación..." onkeyup="buscador()">
-            <button class="btn-new" onclick="abrirEditor()">+ REGISTRAR</button>
+            <input type="text" id="inputBusqueda" class="search-input" placeholder="Buscar por nombre, ciudad..." onkeyup="buscador()">
+            <button class="btn-new" onclick="abrirEditor(null)">+ NUEVO</button>
         </div>
         <div class="container">
-            <h2 id="txtTitulo" style="margin-bottom:25px; color: #fff;">CIUDADES:</h2>
-            <button id="btnVolver" onclick="volverAtras()" style="display:none; color:var(--azul-claro); background:none; border:none; cursor:pointer; margin-bottom:20px; font-weight: bold;">← VOLVER AL LISTADO</button>
+            <h2 id="txtTitulo" style="margin-bottom:20px; color: #fff;">CIUDADES:</h2>
+            <button id="btnVolver" onclick="volverAtras()" style="display:none; color:var(--azul-claro); background:none; border:none; cursor:pointer; margin-bottom:20px; font-weight:bold;">← VOLVER</button>
             <div id="mainGrid" class="grid-folder"></div>
         </div>
     </div>
 
     <div id="vistaCV">
-        <div style="padding: 20px 40px; background: #000; position: sticky; top: 0; z-index: 100;">
-            <button onclick="irDashboard()" style="background:none; border:none; color:white; cursor:pointer; font-size:1.1rem; font-weight: 600;">← VOLVER AL DASHBOARD</button>
+        <div style="padding: 15px 40px; background: #000; position: sticky; top: 0; z-index: 100;">
+            <button onclick="irDashboard()" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">← DASHBOARD</button>
         </div>
         <div id="cvDetalle" class="cv-sheet"></div>
     </div>
 
     <div id="vistaEditor">
         <div class="editor-box">
-            <h2 id="editorTitulo" style="color:var(--azul-claro); margin-bottom: 20px;">Nuevo Registro</h2>
+            <h2 id="editorTitulo" style="color:var(--azul-claro); margin-bottom:25px;">Editor de Registro</h2>
             <div class="form-grid">
                 <div style="grid-column: span 2; text-align: center;">
                     <img id="prevImg" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:2px solid var(--azul-claro);">
                     <input type="file" id="fileInput" onchange="procesarFoto(this)" style="display: none;">
-                    <button onclick="document.getElementById('fileInput').click()" style="display:block; margin: 10px auto; background: #333; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Subir Foto</button>
+                    <button onclick="document.getElementById('fileInput').click()" style="display:block; margin: 10px auto; background:#333; color:white; border:none; padding:5px 15px; border-radius:5px; cursor:pointer;">Cambiar Foto</button>
                 </div>
                 <div style="grid-column: span 2;"><label>Nombre Completo</label><input type="text" id="inNom"></div>
                 <div><label>N° de Documento</label><input type="text" id="inDoc"></div>
                 <div><label>Fecha de Nacimiento</label><input type="date" id="inNac" onchange="calcularEdad(this.value)"></div>
-                <div><label>Edad (Cálculo Automático)</label><input type="text" id="inEdad" readonly style="background: #050a14; border-color: #3b82f6;"></div>
+                <div><label>Edad</label><input type="text" id="inEdad" readonly style="background:#050a14;"></div>
                 <div><label>WhatsApp</label><input type="text" id="inTel"></div>
                 <div><label>Ciudad</label><input type="text" id="inCiu"></div>
-                <div><label>Filial (Congregación)</label><input type="text" id="inCong"></div>
+                <div><label>Filial / Congregación</label><input type="text" id="inCong"></div>
                 <div><label>Estado Civil</label><input type="text" id="inEstCiv"></div>
-                <div><label>Fiscalizador de:</label><input type="text" id="inFiscTipo"></div>
-                <div><label>Ocupación Espiritual</label><input type="text" id="inOcuEsp"></div>
-                <div><label>Ocupación Material</label><input type="text" id="inOcuMat"></div>
+                <div><label>Cargo</label><input type="text" id="inFiscTipo"></div>
                 <div><label>Años Perseverancia</label><input type="text" id="inAnosP"></div>
                 <div><label>Estado Actual</label><input type="text" id="inEstAct"></div>
-                <div style="grid-column: span 2;"><label>Historial de Vida</label><textarea id="inHist" rows="4"></textarea></div>
-                <button id="btnGuardar" class="btn-new" style="grid-column: span 2;" onclick="guardar()">GUARDAR REGISTRO</button>
-                <button onclick="irDashboard()" style="grid-column: span 2; background:transparent; color:gray; border:none; cursor:pointer;">Cancelar y volver</button>
+                <div style="grid-column: span 2;"><label>Resumen de Vida</label><textarea id="inHist" rows="4"></textarea></div>
+                <button id="btnGuardar" class="btn-new" style="grid-column: span 2;" onclick="guardar()">GUARDAR CAMBIOS</button>
+                <button onclick="irDashboard()" style="grid-column: span 2; background:transparent; color:gray; border:none; cursor:pointer;">Cancelar</button>
             </div>
         </div>
     </div>
@@ -155,7 +145,7 @@
           appId: "1:482161512140:web:95dd229a858ab627a03c69"
         };
         firebase.initializeApp(firebaseConfig);
-        const dbCloud = firebase.firestore();
+        const db = firebase.firestore();
 
         let dataLocal = [];
         let tmpFoto = "";
@@ -169,7 +159,7 @@
             if(u === "admin" && p === "crist2026") { 
                 document.getElementById('vistaLogin').style.display = 'none';
                 irDashboard();
-            } else { alert("Credenciales incorrectas"); }
+            } else { alert("Error"); }
         }
 
         function logout() { location.reload(); }
@@ -178,156 +168,84 @@
             document.getElementById('vistaDashboard').style.display = 'block';
             document.getElementById('vistaCV').style.display = 'none';
             document.getElementById('vistaEditor').style.display = 'none';
-            escucharDatos();
+            escuchar();
         }
 
-        function escucharDatos() {
-            dbCloud.collection("curriculums").orderBy("fecha", "desc").onSnapshot((qs) => {
+        function escuchar() {
+            db.collection("curriculums").onSnapshot((qs) => {
                 dataLocal = [];
-                qs.forEach((doc) => { dataLocal.push({ id_cloud: doc.id, ...doc.data() }); });
+                qs.forEach(doc => dataLocal.push({ id_cloud: doc.id, ...doc.data() }));
                 if(nivelActual === "ciudades") renderCiudades();
             });
         }
 
-        // FUNCIÓN NUEVA: CALCULAR EDAD
         function calcularEdad(fechaNac) {
             if (!fechaNac) return;
             const hoy = new Date();
-            const cumpleanos = new Date(fechaNac);
-            let edad = hoy.getFullYear() - cumpleanos.getFullYear();
-            const m = hoy.getMonth() - cumpleanos.getMonth();
-            if (m < 0 || (m === 0 && hoy.getDate() < cumpleanos.getDate())) {
-                edad--;
-            }
+            const nac = new Date(fechaNac);
+            let edad = hoy.getFullYear() - nac.getFullYear();
+            if (hoy.getMonth() < nac.getMonth() || (hoy.getMonth() === nac.getMonth() && hoy.getDate() < nac.getDate())) edad--;
             document.getElementById('inEdad').value = edad + " años";
         }
 
         function renderCiudades() {
             nivelActual = "ciudades";
-            document.getElementById('txtTitulo').innerText = "LISTADO DE CIUDADES:";
             document.getElementById('btnVolver').style.display = 'none';
             const cont = document.getElementById('mainGrid');
             cont.innerHTML = "";
             const ciudades = [...new Set(dataLocal.map(f => f.ciudad))];
             ciudades.forEach(ciu => {
-                const cant = dataLocal.filter(f => f.ciudad === ciu).length;
-                cont.innerHTML += `<div class="folder-card" onclick="verCongregaciones('${ciu}')">
-                    <span style="font-size: 2rem;">📍</span><br>
-                    <h3 style="margin-top:10px; color:#fff;">${ciu}</h3>
-                    <p style="font-size:0.8rem; color:var(--azul-claro);">${cant} Registrados</p>
-                </div>`;
+                cont.innerHTML += `<div class="folder-card" onclick="verCongs('${ciu}')">📍 <h3>${ciu}</h3></div>`;
             });
         }
 
-        function verCongregaciones(ciu) {
-            nivelActual = "congregaciones";
-            ciudadSeleccionada = ciu;
-            document.getElementById('txtTitulo').innerText = "Ciudad: " + ciu;
+        function verCongs(ciu) {
+            nivelActual = "congs"; ciudadSeleccionada = ciu;
             document.getElementById('btnVolver').style.display = 'block';
             const cont = document.getElementById('mainGrid');
             cont.innerHTML = "";
             const congs = [...new Set(dataLocal.filter(f => f.ciudad === ciu).map(f => f.cong))];
             congs.forEach(con => {
-                cont.innerHTML += `<div class="folder-card" onclick="verFiscalizadores('${ciu}', '${con}')">
-                    <span style="font-size: 2rem;">⛪</span><br>
-                    <h3 style="margin-top:10px; color:#fff;">${con}</h3>
-                </div>`;
+                cont.innerHTML += `<div class="folder-card" onclick="verFisc('${ciu}', '${con}')">⛪ <h3>${con}</h3></div>`;
             });
         }
 
-        function verFiscalizadores(ciu, con) {
-            nivelActual = "fiscalizadores";
-            document.getElementById('txtTitulo').innerText = "Congregación: " + con;
+        function verFisc(ciu, con) {
+            nivelActual = "fisc";
             const cont = document.getElementById('mainGrid');
             cont.innerHTML = "";
             dataLocal.filter(f => f.ciudad === ciu && f.cong === con).forEach(f => {
-                cont.innerHTML += `<div class="folder-card" onclick="verCV('${f.id_cloud}')">
-                    <img src="${f.foto || 'https://via.placeholder.com/70'}" class="card-img">
-                    <h3 style="color:#fff;">${f.nombre}</h3>
-                    <p style="font-size:0.8rem; color:gray;">${f.fiscTipo || 'Fiscalizador'}</p>
-                </div>`;
+                cont.innerHTML += `<div class="folder-card" onclick="verCV('${f.id_cloud}')"><img src="${f.foto || 'https://via.placeholder.com/70'}" class="card-img"><h3>${f.nombre}</h3></div>`;
             });
         }
 
         function volverAtras() {
-            if (nivelActual === "fiscalizadores") verCongregaciones(ciudadSeleccionada);
+            if (nivelActual === "fisc") verCongs(ciudadSeleccionada);
             else renderCiudades();
         }
 
-        function buscador() {
-            const q = document.getElementById('inputBusqueda').value.toLowerCase();
-            if(!q) { renderCiudades(); return; }
-            nivelActual = "busqueda";
-            document.getElementById('txtTitulo').innerText = "Resultados encontrados:";
-            document.getElementById('btnVolver').style.display = 'block';
-            const cont = document.getElementById('mainGrid');
-            cont.innerHTML = "";
-            
-            dataLocal.filter(f => 
-                f.nombre.toLowerCase().includes(q) || 
-                f.ciudad.toLowerCase().includes(q) || 
-                f.cong.toLowerCase().includes(q)
-            ).forEach(f => {
-                cont.innerHTML += `<div class="folder-card" onclick="verCV('${f.id_cloud}')">
-                    <img src="${f.foto || 'https://via.placeholder.com/70'}" class="card-img">
-                    <h3 style="color:#fff;">${f.nombre}</h3>
-                    <p style="font-size:0.7rem; color:var(--azul-claro);">${f.cong} - ${f.ciudad}</p>
-                </div>`;
-            });
-        }
-
-        function verCV(idCloud) {
-            const f = dataLocal.find(x => x.id_cloud === idCloud);
-            const formattedName = f.nombre.split(' ').join('<br>');
+        function verCV(id) {
+            const f = dataLocal.find(x => x.id_cloud === id);
             document.getElementById('vistaDashboard').style.display = 'none';
             document.getElementById('vistaCV').style.display = 'block';
-            window.scrollTo(0,0);
-            
             document.getElementById('cvDetalle').innerHTML = `
                 <div class="cv-header-block">
-                    <img src="${f.foto || 'https://via.placeholder.com/150'}" class="cv-photo" onclick="document.getElementById('fotoAgrandada').src=this.src; document.getElementById('modalFoto').style.display='flex'">
-                    <div class="cv-name">${formattedName}</div>
-                    <div class="cv-sub">📍 ${f.ciudad.toUpperCase()}  |  ⛪ ${f.cong.toUpperCase()}</div>
+                    <img src="${f.foto || ''}" class="cv-photo" onclick="document.getElementById('fotoAgrandada').src=this.src; document.getElementById('modalFoto').style.display='flex'">
+                    <div class="cv-name">${f.nombre}</div>
+                    <div class="cv-sub">📍 ${f.ciudad} | ⛪ ${f.cong}</div>
                 </div>
-
                 <div class="cv-body-content">
                     <div class="cv-aside">
-                        <div class="cv-section-title">INFORMACIÓN DE CONTACTO</div>
+                        <div class="cv-section-title">CONTACTO Y DATOS</div>
                         <p>📱 WhatsApp: ${f.tel || 'S/N'}</p>
-                        <p>🆔 Documento: ${f.doc || '---'}</p>
-                        <p>📍 Ciudad: ${f.ciudad}</p>
-                        <p>⛪ Congregación: ${f.cong}</p>
-
-                        <div class="cv-section-title" style="margin-top:40px;">DATOS PERSONALES</div>
+                        <p>🆔 Documento: ${f.doc || 'S/N'}</p>
                         <p>🎂 Edad: ${f.edad || '---'}</p>
                         <p>💍 Estado: ${f.estCiv || '---'}</p>
-                        <p>📋 Cargo: ${f.fiscTipo || '---'}</p>
-                        
-                        <button onclick="abrirEditor('${f.id_cloud}')" style="margin-top:30px; background:transparent; border:1px solid var(--azul-claro); color:var(--azul-claro); padding:8px 15px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">MODIFICAR REGISTRO</button>
+                        <button onclick="abrirEditor('${f.id_cloud}')" style="margin-top:20px; width:100%; padding:10px; cursor:pointer;">MODIFICAR REGISTRO</button>
                     </div>
-
                     <div class="cv-main">
-                        <div class="cv-hist-title">Historial de Vida</div>
-                        <p style="color:#8b949e; font-size:1rem; margin-bottom: 40px; white-space: pre-line;">${f.hist || 'Sin información.'}</p>
-
-                        <div class="cv-section-title">DETALLES ESPECÍFICOS</div>
-                        
-                        <div class="cv-bullet">
-                            <div class="cv-bullet-icon">▶</div>
-                            <div class="cv-bullet-text"><b>Ocupación Espiritual</b><span>${f.ocuEsp || '---'}</span></div>
-                        </div>
-                        <div class="cv-bullet">
-                            <div class="cv-bullet-icon">▶</div>
-                            <div class="cv-bullet-text"><b>Ocupación Material</b><span>${f.ocuMat || '---'}</span></div>
-                        </div>
-                        <div class="cv-bullet">
-                            <div class="cv-bullet-icon">▶</div>
-                            <div class="cv-bullet-text"><b>Años de Perseverancia</b><span>${f.anosP || '---'}</span></div>
-                        </div>
-                        <div class="cv-bullet">
-                            <div class="cv-bullet-icon">▶</div>
-                            <div class="cv-bullet-text"><b>Estado Actual del Miembro</b><span>${f.estAct || '---'}</span></div>
-                        </div>
+                        <div class="cv-hist-title">Historial</div>
+                        <p style="white-space:pre-line;">${f.hist || 'Sin datos'}</p>
                     </div>
                 </div>`;
         }
@@ -337,49 +255,40 @@
             document.getElementById('vistaDashboard').style.display = 'none';
             document.getElementById('vistaCV').style.display = 'none';
             document.getElementById('vistaEditor').style.display = 'block';
-            window.scrollTo(0,0);
-
+            
             if(id) {
                 const f = dataLocal.find(x => x.id_cloud === id);
-                document.getElementById('editorTitulo').innerText = "Actualizar Registro";
-                document.getElementById('inNom').value = f.nombre;
+                document.getElementById('inNom').value = f.nombre || "";
                 document.getElementById('inDoc').value = f.doc || "";
                 document.getElementById('inNac').value = f.nac || "";
                 document.getElementById('inEdad').value = f.edad || "";
-                document.getElementById('inCiu').value = f.ciudad;
-                document.getElementById('inCong').value = f.cong;
-                document.getElementById('inTel').value = f.tel;
+                document.getElementById('inCiu').value = f.ciudad || "";
+                document.getElementById('inCong').value = f.cong || "";
+                document.getElementById('inTel').value = f.tel || "";
                 document.getElementById('inEstCiv').value = f.estCiv || "";
                 document.getElementById('inFiscTipo').value = f.fiscTipo || "";
-                document.getElementById('inOcuEsp').value = f.ocuEsp || "";
-                document.getElementById('inOcuMat').value = f.ocuMat || "";
                 document.getElementById('inAnosP').value = f.anosP || "";
                 document.getElementById('inEstAct').value = f.estAct || "";
                 document.getElementById('inHist').value = f.hist || "";
                 tmpFoto = f.foto || "";
                 document.getElementById('prevImg').src = f.foto || "https://via.placeholder.com/100";
             } else {
-                document.getElementById('editorTitulo').innerText = "Nuevo Registro";
                 document.querySelectorAll('#vistaEditor input, #vistaEditor textarea').forEach(i => i.value = "");
-                tmpFoto = "";
                 document.getElementById('prevImg').src = "https://via.placeholder.com/100";
+                tmpFoto = "";
             }
         }
 
         function procesarFoto(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => { 
-                    tmpFoto = e.target.result; 
-                    document.getElementById('prevImg').src = tmpFoto; 
-                };
+                reader.onload = e => { tmpFoto = e.target.result; document.getElementById('prevImg').src = tmpFoto; };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
         async function guardar() {
-            const btn = document.getElementById('btnGuardar');
-            const registro = {
+            const r = {
                 nombre: document.getElementById('inNom').value,
                 doc: document.getElementById('inDoc').value,
                 nac: document.getElementById('inNac').value,
@@ -389,26 +298,18 @@
                 tel: document.getElementById('inTel').value,
                 estCiv: document.getElementById('inEstCiv').value,
                 fiscTipo: document.getElementById('inFiscTipo').value,
-                ocuEsp: document.getElementById('inOcuEsp').value,
-                ocuMat: document.getElementById('inOcuMat').value,
                 anosP: document.getElementById('inAnosP').value,
                 estAct: document.getElementById('inEstAct').value,
                 hist: document.getElementById('inHist').value,
                 foto: tmpFoto,
                 fecha: new Date().getTime()
             };
-
-            if(!registro.nombre || !registro.ciudad) { alert("Nombre y Ciudad son obligatorios"); return; }
-
-            btn.innerText = "PROCESANDO...";
-            btn.disabled = true;
-
+            if(!r.nombre || !r.ciudad) return alert("Nombre y Ciudad obligatorios");
             try {
-                if(idEdicion) await dbCloud.collection("curriculums").doc(idEdicion).update(registro);
-                else await dbCloud.collection("curriculums").add(registro);
+                if(idEdicion) await db.collection("curriculums").doc(idEdicion).update(r);
+                else await db.collection("curriculums").add(r);
                 irDashboard();
-            } catch (e) { alert("Error al guardar"); }
-            finally { btn.innerText = "GUARDAR REGISTRO"; btn.disabled = false; }
+            } catch(e) { alert("Error"); }
         }
     </script>
 </body>
