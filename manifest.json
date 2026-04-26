@@ -1,15 +1,16 @@
 {
-  "name": "SISTEMA FISCALIZADORES - ELITE",
+  "name": "SISTEMA FISCALIZADORES",
   "short_name": "Fiscalizadores",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#0a1f33",
+  "theme_color": "#11a0c8",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/739/739247.png",
+      "src": "logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
