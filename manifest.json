@@ -3,9 +3,9 @@
   "name": "Fiscalizadores",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/739/739247.png",
+      "src": "icono.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     }
   ],
