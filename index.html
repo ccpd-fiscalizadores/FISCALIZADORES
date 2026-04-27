@@ -127,7 +127,7 @@
             
             <div style="text-align: left; margin-bottom: 15px;">
                 <label class="info-label">Email de acceso</label>
-                <input type="email" id="loginEmail" placeholder="admin@sistema.com">
+                <input type="email" id="loginEmail" placeholder="usuario@sistema.com">
             </div>
             
             <div style="text-align: left; margin-bottom: 25px;">
@@ -240,13 +240,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // BASE DE DATOS DE USUARIOS (CATEGORÍAS)
+        // BASE DE DATOS DE USUARIOS
         const USUARIOS_SISTEMA = {
-            "solteros@fiscalizadores.com": { pass: "12345", cat: "SOLTEROS" },
-            "conjugales@fiscalizadores.com": { pass: "12345", cat: "CONJUGALES" },
-            "suspendidos@fiscalizadores.com": { pass: "12345", cat: "SUSPENDIDOS" },
-            "ccpd@fiscalizadores.com": { pass: "12345", cat: "CCPD" },
-            "admin@fiscalizadores.com": { pass: "admin2024", cat: "ADMIN" }
+            "admi@com": { pass: "admigeneral.26", cat: "ADMIN" },
+            "solteros@com": { pass: "4532", cat: "SOLTEROS" },
+            "conyugales@com": { pass: "8758", cat: "CONJUGALES" },
+            "suspendidos@com": { pass: "9823", cat: "SUSPENDIDOS" },
+            "dacyp@com": { pass: "1630", cat: "CCPD" }
         };
 
         const ubicaciones = {
@@ -292,7 +292,6 @@
             irDashboard();
         }
 
-        // FUNCIONES DE INTERFAZ
         function actualizarProvinciasEditor(callback) {
             const pais = document.getElementById("inNacIo").value;
             const ciuSelect = document.getElementById("inCiu");
@@ -336,7 +335,6 @@
                 let todos = [];
                 snap.forEach(doc => todos.push({ id: doc.id, ...doc.data() }));
                 
-                // FILTRO DE SEGURIDAD POR CATEGORÍA
                 if (categoriaUsuario === "ADMIN") {
                     miembros = todos;
                 } else {
@@ -541,17 +539,9 @@
                 grid.innerHTML += `<div class="card-folder" onclick="verMiembros('${c.ciudad}','${c.nombre}')"><img src="${p?p.fotoCong:'https://via.placeholder.com/100?text=⛪'}" class="folder-img" style="width:60px; height:60px;"><h3>${c.nombre}</h3><p style="font-size:0.7rem; color:var(--accent)">CONGREGACIÓN</p></div>`;
             });
             miembros.filter(m => m.nombre.toLowerCase().includes(texto)).forEach(m => {
-                grid.innerHTML += `<div class="card-folder" onclick="verCV('${m.id}')"><img src="${m.foto || 'https://via.placeholder.com/80'}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; margin-bottom:10px; border: 2px solid var(--accent);"><h3>${m.nombre}</h3><p style="font-size:0.8rem; color:var(--texto-sec)">${m.cong}</p></div>`;
+                grid.innerHTML += `<div class="card-folder" onclick="verCV('${m.id}')"><img src="${m.foto || 'https://via.placeholder.com/80'}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; margin-bottom:10px; border: 2px solid var(--accent);"><h3>${m.nombre}</h3><p style="font-size:0.8rem; color:var(--accent)">PERSONA</p></div>`;
             });
         }
-
-        // AUTO-LOGIN SI HAY SESIÓN ACTIVA
-        window.onload = () => {
-            if (localStorage.getItem('fiscalizador_session') === 'active') {
-                categoriaUsuario = localStorage.getItem('fiscalizador_cat');
-                mostrarSistema();
-            }
-        };
     </script>
 </body>
 </html>
