@@ -32,32 +32,24 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             transition: 0.3s;
             -webkit-tap-highlight-color: transparent;
-            touch-action: pan-x pan-y; /* Bloquea el zoom gestual */
+            touch-action: pan-x pan-y;
         }
 
         body { 
             background-color: var(--bg); color: var(--texto); line-height: 1.6; 
-            overflow-x: hidden;
-            width: 100%;
-            position: relative;
+            overflow-x: hidden; width: 100%; position: relative;
         }
 
-        /* Forzamos que los inputs no disparen zoom de sistema */
+        /* Inputs a 16px para evitar zoom automático en iOS */
         input, select, textarea { 
             font-size: 16px !important; 
             touch-action: manipulation;
         }
 
         header { 
-            background: var(--card); 
-            padding: 0.8rem 2rem; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--borde); 
-            position: sticky; 
-            top: 0; 
-            z-index: 1000; 
+            background: var(--card); padding: 0.8rem 2rem; 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid var(--borde); position: sticky; top: 0; z-index: 1000; 
         }
         .logo-container { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         .app-logo { height: 45px; width: auto; border-radius: 8px; }
@@ -142,7 +134,7 @@
 
     <div id="vistaDashboard">
         <div style="padding: 20px 40px; display: flex; gap: 15px;">
-            <input type="text" id="busqueda" placeholder="Buscar por nombre, ciudad o congregación..." style="flex:1" onkeyup="buscador()">
+            <input type="text" id="busqueda" placeholder="Buscar por nombre o congregación..." style="flex:1" onkeyup="buscador()">
             <button class="btn-primary" onclick="abrirEditor()">+ NUEVO</button>
         </div>
         <div style="padding: 0 40px;">
@@ -295,7 +287,8 @@
         }
 
         function verMiembros(c, co) {
-            nivel = "miembros"; congSelGlobal = co;
+            nivel = "miembros"; congSelGlobal = co; ciuSel = c;
+            document.getElementById('btnBack').style.display = 'inline-block';
             document.getElementById('tituloTxt').innerText = co;
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
             miembros.filter(m => m.ciudad === c && m.cong === co).forEach(m => {
@@ -408,18 +401,37 @@
             }
 
             grid.innerHTML = "";
-            const resultados = miembros.filter(m => 
-                m.nombre.toLowerCase().includes(texto) || 
-                m.ciudad.toLowerCase().includes(texto) || 
-                m.cong.toLowerCase().includes(texto)
+            
+            // 1. Filtrar Congregaciones únicas que coincidan
+            const congsEncontradas = [...new Set(miembros
+                .filter(m => m.cong.toLowerCase().includes(texto))
+                .map(m => JSON.stringify({nombre: m.cong, ciudad: m.ciudad}))
+            )].map(s => JSON.parse(s));
+
+            congsEncontradas.forEach(c => {
+                const p = miembros.find(m => m.ciudad === c.ciudad && m.cong === c.nombre && m.fotoCong);
+                const img = p ? p.fotoCong : "https://via.placeholder.com/100?text=⛪";
+                grid.innerHTML += `
+                    <div class="card-folder" onclick="verMiembros('${c.ciudad}','${c.nombre}')">
+                        <img src="${img}" class="folder-img">
+                        <h3>${c.nombre}</h3>
+                        <p style="font-size:0.75rem; color:var(--accent)">VER CONGREGACIÓN</p>
+                    </div>`;
+            });
+
+            // 2. Filtrar Personas por nombre (solo si el nombre NO es igual al de una congregación ya mostrada)
+            const personasEncontradas = miembros.filter(m => 
+                m.nombre.toLowerCase().includes(texto) && 
+                !m.cong.toLowerCase().includes(texto)
             );
 
-            resultados.forEach(m => {
-                grid.innerHTML += `<div class="card-folder" onclick="verCV('${m.id}')">
-                    <img src="${m.foto || 'https://via.placeholder.com/80'}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:10px; border: 2px solid var(--accent);">
-                    <h3>${m.nombre}</h3>
-                    <p style="font-size:0.8rem; color:var(--texto-sec)">${m.ciudad} - ${m.cong}</p>
-                </div>`;
+            personasEncontradas.forEach(m => {
+                grid.innerHTML += `
+                    <div class="card-folder" onclick="verCV('${m.id}')">
+                        <img src="${m.foto || 'https://via.placeholder.com/80'}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:10px; border: 2px solid var(--accent);">
+                        <h3>${m.nombre}</h3>
+                        <p style="font-size:0.8rem; color:var(--texto-sec)">${m.cong}</p>
+                    </div>`;
             });
         }
 
