@@ -225,7 +225,7 @@
             ciudades.forEach(c => {
                 const p = miembros.find(m => m.ciudad === c);
                 let ico = (p && p.nacionalidad && p.nacionalidad !== "undefined") ? p.nacionalidad : "📍";
-                grid.innerHTML += <div class="card-folder" onclick="verCongs('${c}')"><span style="font-size:3rem;">${ico}</span><h3 style="margin-top:10px;">${c}</h3></div>;
+                grid.innerHTML += `<div class="card-folder" onclick="verCongs('${c}')"><span style="font-size:3rem;">${ico}</span><h3 style="margin-top:10px;">${c}</h3></div>`;
             });
         }
 
