@@ -2,7 +2,7 @@
 <html lang="es">
 <head> 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>FISCALIZADORES</title>
     
     <link rel="icon" type="image/png" href="logo.png">
@@ -31,7 +31,8 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             transition: 0.3s;
             -webkit-tap-highlight-color: transparent;
-            touch-action: pan-x pan-y;
+            /* MODIFICADO: touch-action manipulation evita el zoom por gestos en toda la app */
+            touch-action: manipulation;
         }
 
         body { 
@@ -107,7 +108,14 @@
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         
         #imgOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        #imgOverlay img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+        
+        /* MODIFICADO: El overlay sí permite zoom (pinch-zoom) para que el jefe pueda ver la foto grande */
+        #imgOverlay img { 
+            max-width: 95%; 
+            max-height: 95%; 
+            border-radius: 10px; 
+            touch-action: pinch-zoom; 
+        }
 
         @media (max-width: 768px) { 
             .cv-content { grid-template-columns: 1fr; } 
