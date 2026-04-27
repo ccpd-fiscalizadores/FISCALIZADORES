@@ -47,6 +47,7 @@
             color: var(--texto);
             padding: 12px;
             border-radius: 10px;
+            width: 100%;
         }
 
         header { 
@@ -87,7 +88,7 @@
 
         .section-label { font-size: 0.75rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 20px; display: block; border-bottom: 1px solid var(--borde); padding-bottom: 5px; }
         .info-group { margin-bottom: 20px; }
-        .info-label { font-size: 0.85rem; color: var(--texto-sec); display: block; }
+        .info-label { font-size: 0.85rem; color: var(--texto-sec); display: block; margin-bottom: 5px; }
         .info-value { font-size: 1.1rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
         .historial-box { white-space: pre-line; color: var(--texto-sec); font-size: 1rem; margin-bottom: 30px; }
 
@@ -163,17 +164,27 @@
             <div class="form-grid">
                 <div><label class="info-label">Nombre Completo</label><input type="text" id="inNom"></div>
                 <div><label class="info-label">Fecha de Nacimiento</label><input type="date" id="inFechaNac"></div>
-                <div><label class="info-label">Nacionalidad</label>
-                    <select id="inNacIo">
-                        <option value="🇵🇾">🇵🇾 Paraguay</option>
+                
+                <div>
+                    <label class="info-label">País / Nacionalidad</label>
+                    <select id="inNacIo" onchange="actualizarProvinciasEditor()">
+                        <option value="" disabled selected>Seleccione país</option>
                         <option value="🇦🇷">🇦🇷 Argentina</option>
+                        <option value="🇵🇾">🇵🇾 Paraguay</option>
                         <option value="🇧🇷">🇧🇷 Brasil</option>
                     </select>
                 </div>
+
+                <div>
+                    <label class="info-label">Ciudad / Provincia</label>
+                    <select id="inCiu">
+                        <option value="" disabled selected>Primero elija país</option>
+                    </select>
+                </div>
+
                 <div><label class="info-label">WhatsApp</label><input type="text" id="inTel"></div>
                 <div><label class="info-label">Documento</label><input type="text" id="inDoc"></div>
                 <div><label class="info-label">Estado Civil</label><input type="text" id="inEstCiv"></div>
-                <div><label class="info-label">Ciudad</label><input type="text" id="inCiu"></div>
                 <div><label class="info-label">Congregación</label><input type="text" id="inCong"></div>
                 <div><label class="info-label">Ocupación Espiritual</label><input type="text" id="inOcuEsp"></div>
                 <div><label class="info-label">Ocupación Material</label><input type="text" id="inOcuMat"></div>
@@ -201,6 +212,12 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        const ubicaciones = {
+            "🇦🇷": ["Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", "Santiago del Estero", "Tierra del Fuego", "Tucumán"],
+            "🇵🇾": ["Asunción", "Concepción", "San Pedro", "Cordillera", "Guairá", "Caaguazú", "Caazapá", "Itapúa", "Misiones", "Paraguarí", "Alto Paraná", "Central", "Ñeembucú", "Amambay", "Canindeyú", "Presidente Hayes", "Boquerón", "Alto Paraguay"],
+            "🇧🇷": ["Acre", "Alagoas", "Amapá", "Amazonas", "Bahia", "Ceará", "Distrito Federal", "Espírito Santo", "Goiás", "Maranhão", "Mato Grosso", "Mato Grosso do Sul", "Minas Gerais", "Pará", "Paraíba", "Paraná", "Pernambuco", "Piauí", "Rio de Janeiro", "Rio Grande do Norte", "Rio Grande do Sul", "Rondônia", "Roraima", "Santa Catarina", "São Paulo", "Sergipe", "Tocantins"]
+        };
+
         let miembros = [];
         let fotoURL = "";
         let idEdit = null;
@@ -208,6 +225,21 @@
         let ciuSel = "";
         let congSelGlobal = "";
         let congParaEditar = "";
+
+        function actualizarProvinciasEditor(callback) {
+            const pais = document.getElementById("inNacIo").value;
+            const ciuSelect = document.getElementById("inCiu");
+            ciuSelect.innerHTML = '<option value="" disabled selected>Seleccione ubicación</option>';
+            
+            if(ubicaciones[pais]) {
+                ubicaciones[pais].forEach(c => {
+                    const opt = document.createElement("option");
+                    opt.value = c; opt.textContent = c;
+                    ciuSelect.appendChild(opt);
+                });
+            }
+            if(callback) callback();
+        }
 
         function calcularEdad(fecha) {
             if(!fecha) return "---";
@@ -248,11 +280,15 @@
             document.getElementById('btnBack').style.display = 'none';
             document.getElementById('tituloTxt').innerText = "Listado de Ciudades";
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
-            const ciudades = [...new Set(miembros.map(m => m.ciudad))];
-            ciudades.forEach(c => {
-                const p = miembros.find(m => m.ciudad === c);
+            
+            // Unificamos nombres para evitar "Santa fe" vs "Santa Fe"
+            const ciudadesUnicas = [...new Set(miembros.map(m => m.ciudad.trim().toUpperCase()))];
+            
+            ciudadesUnicas.forEach(cU => {
+                const p = miembros.find(m => m.ciudad.trim().toUpperCase() === cU);
+                const nombreReal = p.ciudad; // Usamos el nombre del primer registro encontrado
                 let ico = (p && p.nacionalidad && p.nacionalidad !== "undefined") ? p.nacionalidad : "📍";
-                grid.innerHTML += `<div class="card-folder" onclick="verCongs('${c}')"><span style="font-size:3rem;">${ico}</span><h3 style="margin-top:10px;">${c}</h3></div>`;
+                grid.innerHTML += `<div class="card-folder" onclick="verCongs('${nombreReal}')"><span style="font-size:3rem;">${ico}</span><h3 style="margin-top:10px;">${nombreReal}</h3></div>`;
             });
         }
 
@@ -261,9 +297,9 @@
             document.getElementById('btnBack').style.display = 'inline-block';
             document.getElementById('tituloTxt').innerText = "Congregaciones en " + c;
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
-            const congs = [...new Set(miembros.filter(m => m.ciudad === c).map(m => m.cong))];
+            const congs = [...new Set(miembros.filter(m => m.ciudad.trim().toUpperCase() === c.trim().toUpperCase()).map(m => m.cong))];
             congs.forEach(co => {
-                const p = miembros.find(m => m.ciudad === c && m.cong === co && m.fotoCong);
+                const p = miembros.find(m => m.ciudad.trim().toUpperCase() === c.trim().toUpperCase() && m.cong === co && m.fotoCong);
                 const img = p ? p.fotoCong : "https://via.placeholder.com/100?text=⛪";
                 grid.innerHTML += `<div class="card-folder">
                     <div class="btn-edit-photo" onclick="prepararFotoCong(event, '${co}')">✏️</div>
@@ -296,7 +332,7 @@
             document.getElementById('btnBack').style.display = 'inline-block';
             document.getElementById('tituloTxt').innerText = co;
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
-            miembros.filter(m => m.ciudad === c && m.cong === co).forEach(m => {
+            miembros.filter(m => m.ciudad.trim().toUpperCase() === c.trim().toUpperCase() && m.cong === co).forEach(m => {
                 grid.innerHTML += `<div class="card-folder" onclick="verCV('${m.id}')">
                     <img src="${m.foto || 'https://via.placeholder.com/80'}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:10px; border: 2px solid var(--accent);">
                     <h3>${m.nombre}</h3>
@@ -347,17 +383,23 @@
         }
 
         function abrirEditor(id = null) {
-            idEdit = id; document.getElementById('vistaDashboard').style.display = 'none';
+            idEdit = id; 
+            document.getElementById('vistaDashboard').style.display = 'none';
             document.getElementById('vistaCV').style.display = 'none'; 
             document.getElementById('vistaEditor').style.display = 'block';
+            
             if(id) {
                 const m = miembros.find(x => x.id === id);
                 document.getElementById('inNom').value = m.nombre; 
                 document.getElementById('inFechaNac').value = m.fechaNac || "";
                 document.getElementById('inDoc').value = m.doc || "";
-                document.getElementById('inNacIo').value = m.nacionalidad || "🇵🇾";
+                document.getElementById('inNacIo').value = m.nacionalidad || "";
+                
+                actualizarProvinciasEditor(() => {
+                    document.getElementById('inCiu').value = m.ciudad;
+                });
+
                 document.getElementById('inTel').value = m.tel || "";
-                document.getElementById('inCiu').value = m.ciudad; 
                 document.getElementById('inCong').value = m.cong;
                 document.getElementById('inEstCiv').value = m.estCiv || ""; 
                 document.getElementById('inOcuEsp').value = m.ocuEsp || "";
@@ -370,6 +412,8 @@
                 document.getElementById('prevFoto').src = m.foto || "https://via.placeholder.com/120";
             } else {
                 document.querySelectorAll('#vistaEditor input, #vistaEditor textarea').forEach(i => i.value = "");
+                document.getElementById('inNacIo').value = "";
+                document.getElementById('inCiu').innerHTML = '<option value="" disabled selected>Primero elija país</option>';
                 document.getElementById('prevFoto').src = "https://via.placeholder.com/120";
                 fotoURL = "";
             }
@@ -401,6 +445,10 @@
                 hist: document.getElementById('inHist').value,
                 foto: fotoURL
             };
+            if(!d.ciudad || !d.nacionalidad) {
+                alert("Por favor seleccione País y Ciudad");
+                return;
+            }
             if(idEdit) await db.collection("curriculums").doc(idEdit).update(d);
             else await db.collection("curriculums").add(d);
             irDashboard();
@@ -419,7 +467,6 @@
 
             grid.innerHTML = "";
             
-            // 1. Filtrar Ciudades únicas que coincidan
             const ciudadesCoincidentes = {};
             miembros.forEach(m => {
                 if (m.ciudad.toLowerCase().includes(texto)) {
@@ -440,7 +487,6 @@
                     </div>`;
             });
 
-            // 2. Filtrar Congregaciones únicas que coincidan
             const congsEncontradas = [...new Set(miembros
                 .filter(m => m.cong.toLowerCase().includes(texto))
                 .map(m => JSON.stringify({nombre: m.cong, ciudad: m.ciudad}))
@@ -457,7 +503,6 @@
                     </div>`;
             });
 
-            // 3. Filtrar Personas por nombre
             const personasEncontradas = miembros.filter(m => 
                 m.nombre.toLowerCase().includes(texto)
             );
