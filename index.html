@@ -91,13 +91,14 @@
         }
 
         .cv-container { max-width: 800px; margin: 20px auto; background: var(--card); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); margin-bottom: 50px; }
-        .cv-banner { background: #000; padding: 40px 20px; text-align: center; color: white; position: relative; }
-        .cv-photo { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; margin-bottom: 20px; cursor: pointer; }
+        /* BANNER CAMBIADO A AZUL */
+        .cv-banner { background: #0284c7; padding: 40px 20px; text-align: center; color: white; position: relative; }
+        .cv-photo { width: 160px; height: 160px; border-radius: 50%; border: 4px solid white; object-fit: cover; margin-bottom: 20px; cursor: pointer; }
         .cv-name { font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-        .cv-sub { color: var(--accent); font-weight: 600; margin-top: 5px; display: flex; justify-content: center; gap: 10px; align-items: center; }
+        .cv-sub { color: #e0f2fe; font-weight: 600; margin-top: 5px; display: flex; justify-content: center; gap: 10px; align-items: center; }
 
         .cv-content { display: grid; grid-template-columns: 1fr 1.5fr; gap: 0; }
-        .cv-left { background: rgba(0,0,0,0.1); padding: 40px; border-right: 1px solid var(--borde); }
+        .cv-left { background: rgba(0,0,0,0.05); padding: 40px; border-right: 1px solid var(--borde); }
         .cv-right { padding: 40px; display: flex; flex-direction: column; }
 
         .section-label { font-size: 0.75rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 20px; display: block; border-bottom: 1px solid var(--borde); padding-bottom: 5px; }
@@ -128,17 +129,14 @@
             <img src="logo.png" style="height: 70px; margin-bottom: 15px; border-radius: 12px;">
             <h2 style="margin-bottom: 5px; font-weight: 800;">FISCALIZADORES</h2>
             <p style="color: var(--texto-sec); margin-bottom: 25px; font-size: 0.9rem;">Acceso restringido</p>
-            
             <div style="text-align: left; margin-bottom: 15px;">
                 <label class="info-label">Email de acceso</label>
                 <input type="email" id="loginEmail" placeholder="usuario@sistema.com" inputmode="email">
             </div>
-            
             <div style="text-align: left; margin-bottom: 25px;">
                 <label class="info-label">Contraseña</label>
                 <input type="password" id="loginPass" placeholder="••••••••">
             </div>
-
             <button class="btn-primary" style="width: 100%;" onclick="login()">INGRESAR AL PANEL</button>
             <p id="loginError" style="color: #ff4444; margin-top: 15px; font-size: 0.85rem; font-weight: 600;"></p>
         </div>
@@ -187,7 +185,6 @@
             <div class="form-grid">
                 <div><label class="info-label">Nombre Completo</label><input type="text" id="inNom"></div>
                 <div><label class="info-label">Fecha de Nacimiento</label><input type="date" id="inFechaNac"></div>
-                
                 <div>
                     <label class="info-label">País / Nacionalidad</label>
                     <select id="inNacIo" onchange="actualizarProvinciasEditor()">
@@ -197,14 +194,12 @@
                         <option value="🇧🇷">🇧🇷 Brasil</option>
                     </select>
                 </div>
-
                 <div>
                     <label class="info-label">Ciudad / Provincia</label>
                     <select id="inCiu">
                         <option value="" disabled selected>Primero elija país</option>
                     </select>
                 </div>
-
                 <div><label class="info-label">WhatsApp</label><input type="text" id="inTel" inputmode="tel"></div>
                 <div><label class="info-label">Documento</label><input type="text" id="inDoc"></div>
                 <div><label class="info-label">Estado Civil</label><input type="text" id="inEstCiv"></div>
@@ -232,7 +227,6 @@
     </div>
 
     <script>
-        // CONFIGURACIÓN FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBkP6NALOTSHGd4QVgAxHyeJzCCnOUDY6M",
             authDomain: "fiscalizadores-elite.firebaseapp.com",
@@ -271,7 +265,6 @@
             const email = document.getElementById('loginEmail').value.toLowerCase().trim();
             const pass = document.getElementById('loginPass').value.trim();
             const error = document.getElementById('loginError');
-
             if (USUARIOS_SISTEMA[email] && USUARIOS_SISTEMA[email].pass === pass) {
                 categoriaUsuario = USUARIOS_SISTEMA[email].cat;
                 localStorage.setItem('fiscalizador_cat', categoriaUsuario);
@@ -334,7 +327,6 @@
                 let todos = [];
                 snap.forEach(doc => todos.push({ id: doc.id, ...doc.data() }));
                 miembros = (categoriaUsuario === "ADMIN") ? todos : todos.filter(m => m.fisc === categoriaUsuario);
-
                 if(nivel === "ciudades") renderCiudades();
                 else if(nivel === "congs") verCongs(ciuSel);
                 else if(nivel === "miembros") verMiembros(ciuSel, congSelGlobal);
@@ -347,7 +339,6 @@
             document.getElementById('tituloTxt').innerText = "Listado de Ciudades";
             const grid = document.getElementById('gridMain'); grid.innerHTML = "";
             const ciudadesUnicas = [...new Set(miembros.map(m => m.ciudad.trim().toUpperCase()))];
-            
             ciudadesUnicas.forEach(cU => {
                 const p = miembros.find(m => m.ciudad.trim().toUpperCase() === cU);
                 const nombreReal = p.ciudad;
