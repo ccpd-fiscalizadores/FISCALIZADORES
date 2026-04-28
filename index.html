@@ -211,9 +211,10 @@
                     <label class="info-label">Fiscalizador de:</label>
                     <select id="inFisc">
                         <option value="SOLTEROS">SOLTEROS</option>
-                        <option value="CONJUGALES">CONJUGALES</option>
+                        <option value="SOLTERAS">SOLTERAS</option>
+                        <option value="CÓNYUGALES">CÓNYUGALES</option>
                         <option value="SUSPENDIDOS">SUSPENDIDOS</option>
-                        <option value="CCPD">CCPD</option>
+                        <option value="DACYP">DACYP</option>
                     </select>
                 </div>
                 <div style="grid-column: span 2;"><label class="info-label">Historial de Vida</label><textarea id="inHist" rows="5"></textarea></div>
@@ -243,9 +244,10 @@
         const USUARIOS_SISTEMA = {
             "admi@com": { pass: "admigeneral.26", cat: "ADMIN" },
             "solteros@com": { pass: "4532", cat: "SOLTEROS" },
-            "conyugales@com": { pass: "8758", cat: "CONJUGALES" },
+            "solteras@com": { pass: "4532", cat: "SOLTERAS" },
+            "conyugales@com": { pass: "8758", cat: "CÓNYUGALES" },
             "suspendidos@com": { pass: "9823", cat: "SUSPENDIDOS" },
-            "dacyp@com": { pass: "1630", cat: "CCPD" }
+            "dacyp@com": { pass: "1630", cat: "DACYP" }
         };
 
         const ubicaciones = {
