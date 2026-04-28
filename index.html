@@ -39,7 +39,6 @@
             overflow-x: hidden; width: 100%; position: relative;
         }
 
-        /* LOGIN STYLES */
         #vistaLogin {
             height: 100vh; display: flex; align-items: center; justify-content: center;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 20px;
@@ -76,7 +75,8 @@
 
         .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; user-select: none; }
         .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; user-select: none; }
-        .btn-primary:active, .btn-outline:active { transform: scale(0.95); }
+        .btn-danger { background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; width: 100%; }
+        .btn-primary:active, .btn-outline:active, .btn-danger:active { transform: scale(0.95); }
 
         .grid-main { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; padding: 20px 40px; }
         .card-folder { background: var(--card); padding: 25px; border-radius: 18px; border: 1px solid var(--borde); text-align: center; cursor: pointer; position: relative; user-select: none; }
@@ -91,7 +91,6 @@
         }
 
         .cv-container { max-width: 800px; margin: 20px auto; background: var(--card); border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); margin-bottom: 50px; }
-        /* BANNER CAMBIADO A AZUL */
         .cv-banner { background: #0284c7; padding: 40px 20px; text-align: center; color: white; position: relative; }
         .cv-photo { width: 160px; height: 160px; border-radius: 50%; border: 4px solid white; object-fit: cover; margin-bottom: 20px; cursor: pointer; }
         .cv-name { font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
@@ -176,7 +175,7 @@
 
     <div id="vistaEditor">
         <div class="editor-box">
-            <h2 style="margin-bottom: 25px;">Registro de Datos</h2>
+            <h2 id="tituloEditor" style="margin-bottom: 25px;">Registro de Datos</h2>
             <div style="text-align: center; margin-bottom: 30px;">
                 <img id="prevFoto" src="https://via.placeholder.com/120" style="width:120px; height:120px; border-radius:50%; object-fit:cover; border: 3px solid var(--accent);">
                 <input type="file" id="fileIn" onchange="subirFoto(this)" style="display:none" accept="image/*">
@@ -200,7 +199,7 @@
                         <option value="" disabled selected>Primero elija país</option>
                     </select>
                 </div>
-                <div><label class="info-label">Teléfono</label><input type="text" id="inTel" inputmode="tel"></div>
+                <div><label class="info-label">WhatsApp</label><input type="text" id="inTel" inputmode="tel"></div>
                 <div><label class="info-label">Documento</label><input type="text" id="inDoc"></div>
                 <div><label class="info-label">Estado Civil</label><input type="text" id="inEstCiv"></div>
                 <div><label class="info-label">Congregación</label><input type="text" id="inCong"></div>
@@ -212,16 +211,19 @@
                     <label class="info-label">Fiscalizador de:</label>
                     <select id="inFisc">
                         <option value="SOLTEROS">SOLTEROS</option>
-                        <option value="CONYUGALES">CONYUGALES</option>
+                        <option value="CONJUGALES">CONJUGALES</option>
                         <option value="SUSPENDIDOS">SUSPENDIDOS</option>
-                        <option value="DACYP">DACYP</option>
+                        <option value="CCPD">CCPD</option>
                     </select>
                 </div>
                 <div style="grid-column: span 2;"><label class="info-label">Historial de Vida</label><textarea id="inHist" rows="5"></textarea></div>
             </div>
-            <div style="display: flex; gap: 15px; margin-top: 30px;">
-                <button class="btn-primary" style="flex:2" onclick="guardar()">GUARDAR</button>
-                <button class="btn-outline" style="flex:1" onclick="irDashboard()">CANCELAR</button>
+            <div style="margin-top: 30px;">
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn-primary" style="flex:2" onclick="guardar()">GUARDAR CAMBIOS</button>
+                    <button class="btn-outline" style="flex:1" onclick="irDashboard()">CANCELAR</button>
+                </div>
+                <button id="btnEliminar" class="btn-danger" style="display:none;" onclick="eliminarRegistro()">🗑️ ELIMINAR FISCALIZADOR</button>
             </div>
         </div>
     </div>
@@ -241,7 +243,7 @@
         const USUARIOS_SISTEMA = {
             "admi@com": { pass: "admigeneral.26", cat: "ADMIN" },
             "solteros@com": { pass: "4532", cat: "SOLTEROS" },
-            "conyugales@com": { pass: "8758", cat: "CONYUGALES" },
+            "conyugales@com": { pass: "8758", cat: "CONJUGALES" },
             "suspendidos@com": { pass: "9823", cat: "SUSPENDIDOS" },
             "dacyp@com": { pass: "1630", cat: "CCPD" }
         };
@@ -439,8 +441,13 @@
             document.getElementById('vistaDashboard').style.display = 'none';
             document.getElementById('vistaCV').style.display = 'none'; 
             document.getElementById('vistaEditor').style.display = 'block';
+            
+            const btnEliminar = document.getElementById('btnEliminar');
+
             if(id) {
                 const m = miembros.find(x => x.id === id);
+                document.getElementById('tituloEditor').innerText = "Editar Fiscalizador";
+                btnEliminar.style.display = "block";
                 document.getElementById('inNom').value = m.nombre; 
                 document.getElementById('inFechaNac').value = m.fechaNac || "";
                 document.getElementById('inDoc').value = m.doc || "";
@@ -458,10 +465,19 @@
                 fotoURL = m.foto || "";
                 document.getElementById('prevFoto').src = m.foto || "https://via.placeholder.com/120";
             } else {
+                document.getElementById('tituloEditor').innerText = "Nuevo Registro";
+                btnEliminar.style.display = "none";
                 document.querySelectorAll('#vistaEditor input, #vistaEditor textarea').forEach(i => i.value = "");
                 document.getElementById('inFisc').value = (categoriaUsuario === "ADMIN") ? "SOLTEROS" : categoriaUsuario;
                 document.getElementById('prevFoto').src = "https://via.placeholder.com/120";
                 fotoURL = "";
+            }
+        }
+
+        async function eliminarRegistro() {
+            if(confirm("¿Estás seguro de que deseas eliminar permanentemente a este fiscalizador? Esta acción no se puede deshacer.")) {
+                await db.collection("curriculums").doc(idEdit).delete();
+                irDashboard();
             }
         }
 
